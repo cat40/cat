@@ -1,7 +1,10 @@
-#'''
+'''
+Module for advanced math functions
+Intended for use with user interface, rather than computer processing
+For computer processesing, use oldmath (in progress)
+'''
 import cat
-import warnings
-#'''
+#import warnings
 
 '''
 Takes a number and the base to change it to and changes base
@@ -78,15 +81,12 @@ def root(num, base=2, pad=False):
         if pad:
             return ' '+expression+' '
         else:
-            return expression 
+            return expression
 
 '''
-Returns true if input is integer, false if not
+class for factoring things
+might move this to oldmath
 '''
-def isint(num):
-    import math
-    return int(num) == math.ceil(num)
-
 class factor(object):
     def __init__(self):
         import cat
@@ -197,7 +197,7 @@ class fraction(object):
         cat.ctype(num, float, 'tofrac()')
         num2 = num
         count = 0
-        while not isint(num2):
+        while not cat.oldmath.isint(num2):
             num2 *= 10
             count += 1
         n = num2
@@ -233,6 +233,113 @@ class fraction(object):
     @classmethod
     def tostring(frac):
         return frac[0]+'/'+frac(1)
+
+'''
+class for running regressions and giving the result
+'''
+class regression(object):
+    @classmethod
+    def __init__(self):
+        None
+
+    '''
+    Standard regression
+    '''
+    def standard(self, xs, ys, retdeg=False):
+        deg = len(xs)-1
+        array = numpy.zeros((deg+1, deg+1))
+        for i, x in enumerate(xs):
+            for i2, __ in enumerate(array[i]):
+                array[i][i2] = x**(deg-i2)
+        A = numpy.matrix(array)
+        array = numpy.zeros((deg+1, 1))
+        for i, y in enumerate(ys):
+            array[i][0] = y
+        X = numpy.matrix(array)
+        B = A.I*X
+        coeffs = [float(i[0]) for i in B]
+        eq = ''
+        for i, c in enumerate(coeffs):
+            #use for comparison; apparently floats are too imprecise
+            cr = round(c, 2)
+            if c < 10**-10 and c > -(10**-10):
+                c = 0  
+            if cr == 1:
+                eq += 'x**%s+' % (deg-i)
+            elif cr:
+                eq += '%s*x**%s+' % (float(c), deg-i)
+            #finds actual degree of equation
+            if c == deg:
+                deg -= 1
+        #formats equation to make more readable
+        eq = eq.rstrip('+')
+        eq = eq.replace('+-', '-')
+        if retdeg:
+            return eq, deg, coeffs
+        else:
+            return eq
+
+        '''
+        root regression
+        Only works in perfect cases: root(x)+c
+        otherwise returns inverse function (x=y**5+y**2+5)
+        '''
+        @classmethod
+        def root(self, xs, ys):
+            eq, deg, coeffs = reg(ys, xs, True)
+            eq = eq.replace('x', 'y')
+            #perform limited 'algebra'
+            if eq.count('y') == 1:
+                c = str(coeffs[len(coeffs)-1-deg])
+                c = '' if round(float(c), 2) == 1 else c
+                eqt = eq.split('+')
+                eql = eq.split('*')
+                r = eqt[len(eqt)-1] if eqt[len(eqt)-1] == eql[len(eql)-1] else 0
+                if r:
+                    return str(c)+'x**(1/'+str(deg)+')+'+r
+                else:
+                    return str(c)+'x**(1/'+str(deg)+')'
+            else:
+                return eq
+            
+'''
+class for taking irrational numbers out of equations
+Only can do division for now
+Exponents coming later
+'''
+class irrat(object):
+    @classmethod
+    def __init__(self):
+        import math
+        from math import pi, e
+        
+    '''
+    pi
+    '''
+    def rempi(self, n, useunicode=True):
+        pic = u'\u03c0'
+        if not n%pi:
+            n2 = n/pi
+            if not cat.oldmath.isint(n2)
+                n2 = fraction.tostring(fraction.tofrac(n2))
+        #would need to determine if an even root can be taken here,
+        #then take it if nessesary
+        if useunicode:
+            return u'\u03c0*'+n2
+        else:
+            return 'pi*'+n2
+
+    '''
+    e
+    '''
+    def reme(self, n):
+        if not n%e:
+            n2 = n/e
+            if not cat.oldmath.isint(n2):
+                n2 = fraction.tostring(fraction.tofrac(n2))
+        return 'e*'+n2
+        
+        
     
 #this stays at the bottom    
 def newmath():

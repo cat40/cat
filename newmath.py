@@ -240,12 +240,12 @@ class for running regressions and giving the result
 class regression(object):
     @classmethod
     def __init__(self):
-        None
+        import numpy
 
     '''
     Standard regression
     '''
-    def standard(self, xs, ys, retdeg=False):
+    def standreg(self, xs, ys, retdeg=False):
         deg = len(xs)-1
         array = numpy.zeros((deg+1, deg+1))
         for i, x in enumerate(xs):
@@ -285,7 +285,7 @@ class regression(object):
         otherwise returns inverse function (x=y**5+y**2+5)
         '''
         @classmethod
-        def root(self, xs, ys):
+        def rootreg(self, xs, ys):
             eq, deg, coeffs = reg(ys, xs, True)
             eq = eq.replace('x', 'y')
             #perform limited 'algebra'
@@ -301,6 +301,12 @@ class regression(object):
                     return str(c)+'x**(1/'+str(deg)+')'
             else:
                 return eq
+
+        '''
+        sin regression
+        '''
+        @classmethod
+        def sinreg:
             
 '''
 class for taking irrational numbers out of equations

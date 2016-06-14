@@ -246,6 +246,7 @@ class regression(object):
     Standard regression
     '''
     def standreg(self, xs, ys, retdeg=False):
+        import numpy
         deg = len(xs)-1
         array = numpy.zeros((deg+1, deg+1))
         for i, x in enumerate(xs):
@@ -279,35 +280,225 @@ class regression(object):
         else:
             return eq
 
-        '''
-        root regression
-        Only works in perfect cases: root(x)+c
-        otherwise returns inverse function (x=y**5+y**2+5)
-        '''
-        @classmethod
-        def rootreg(self, xs, ys):
-            eq, deg, coeffs = reg(ys, xs, True)
-            eq = eq.replace('x', 'y')
-            #perform limited 'algebra'
-            if eq.count('y') == 1:
-                c = str(coeffs[len(coeffs)-1-deg])
-                c = '' if round(float(c), 2) == 1 else c
-                eqt = eq.split('+')
-                eql = eq.split('*')
-                r = eqt[len(eqt)-1] if eqt[len(eqt)-1] == eql[len(eql)-1] else 0
-                if r:
-                    return str(c)+'x**(1/'+str(deg)+')+'+r
-                else:
-                    return str(c)+'x**(1/'+str(deg)+')'
+    '''
+    root regression
+    Only works in perfect cases: root(x)+c
+    otherwise returns inverse function (x=y**5+y**2+5)
+    '''
+    @classmethod
+    def rootreg(self, xs, ys):
+        eq, deg, coeffs = reg(ys, xs, True)
+        eq = eq.replace('x', 'y')
+        #perform limited 'algebra'
+        if eq.count('y') == 1:
+            c = str(coeffs[len(coeffs)-1-deg])
+            c = '' if round(float(c), 2) == 1 else c
+            eqt = eq.split('+')
+            eql = eq.split('*')
+            r = eqt[len(eqt)-1] if eqt[len(eqt)-1] == eql[len(eql)-1] else 0
+            if r:
+                return str(c)+'x**(1/'+str(deg)+')+'+r
             else:
-                return eq
+                return str(c)+'x**(1/'+str(deg)+')'
+        else:
+            return eq
 
-        '''
-        sin regression
-        '''
-        @classmethod
-        def sinreg:
-            
+    '''
+    sine regression
+    Only works for flat functions (midline y=constant)
+    Other types in progress
+    Input points MUST be on same curve (between two midline intersections with
+    HIGH vertex inbetween)
+    VERY imprecise (occasionaly precise to the tenth place; usually worse)
+    '''
+    @classmethod
+    def sinreg(self, xs, ys, outprecision=1):
+        import numpy
+        from math import pi
+        import cat
+        precision = 5
+        for i, x in enumerate(xs):
+            xs[i] = round(x, precision)
+        for i, y in enumerate(ys):
+            ys[i] = round(y, precision)
+        del x
+        del y
+        #get quadratic curve from hich to derive vertexes midline, and period (find width between intersections
+        A = numpy.matrix([[xs[0]**2, xs[0], 1],
+                          [xs[1]**2, xs[1], 1],
+                          [xs[2]**2, xs[2], 1]])
+        X = numpy.matrix([[ys[0]], [ys[1]], [ys[2]]])
+        B = A.I*X
+        a = round(B[0, 0], precision)
+        b = round(B[1, 0], precision)
+        c = round(B[2, 0], precision)
+        #can evaluate this with different numbers by changing x
+        #positive c to reflect around midline instead of x-axis
+        f1 = '%s*x**2+%s*x+%s' % (a, b, c)
+        f2 = '%s*x**2+%s*x+%s' % (-a, -b, c)
+        #midlines
+        #solves for intesrection
+        #can do this because functions are fliped around midline. Remove c to flip around midline, intersection
+        #is midline
+        #QE
+        #does not account for phase shift
+        #might not need to
+        x1 = 0
+        x2 = round((-2*b)/(2*a), precision)
+        x=0
+        y1 = round(eval(f1), precision)
+        x = x2
+        y2 = round(eval(f1), precision)
+        #possibly find the equation mathich y1 and y2 to find a linier midline
+        assert round(y1, 3) == round(y2, 3), 'Midline is not flat. Non-flat midlines not yet supported. y1=%s. y2=%s' %(y1, y2)
+        #y=asin(b(x+c))+d
+        newd = y1
+        period = round(abs(x1-x2)*2, precision)
+        #period seems to be wildly imprecise, this is an attempt
+        #to ensure it is not 2pi
+        if round(period, 1) == round(2*pi, 1):
+            newb = 1
+        else:
+            newb = abs(x1-x2)*2.0 #real be = 2pi/this
+        #find vertexes
+        h = (-b)/(2*a)
+        x = h
+        k = eval(f1)
+        newa = abs(k-newd)
+        #phase shift
+        newc = (period/4.0 - h)
+        #formats equation
+        coeffs = [newa, newb, newc, newd]
+        for i, co in enumerate(coeffs):
+            coeffs[i] = round(co)
+        newa, newb, newc, newd = coeffs
+        eq = ''
+        if newa != 1:
+            eq += str(newa) 
+        eq += 'sin('
+        roundb = round(2*pi/newb, 1)
+        if newb != 1 and newb != round(2*pi, precision) and not cat.oldmath.closeint((2*pi)/newb, .1) and not cat.oldmath.isfrac(roundb):
+            eq += '2pi/'+str(newb)+'('
+        elif cat.oldmath.closeint((2*pi)/newb, .1) or cat.oldmath.isfrac(roundb):
+            eq += str(round((2*pi)/newb, outprecision))+'('
+##        elif newb == 1:
+##            eq += '2pi('
+        z = numpy.sign(newc)
+        newc = round(newc, precision)%(period/2) #takes remainder becase a c larger than the period would be pointless
+        newc *= z
+        if newc != 0:
+            if newc > 0:
+                eq += 'x + '+str(newc)
+            else:
+                eq += 'x '+str(newc)
+        else:
+            eq += 'x'
+        if newb != 1 and newb != round(2*pi, precision):
+            eq += ')'
+        eq += ')'
+        if newd != 0:
+            if newd > 0:
+                eq += '+'+str(newd)
+            else:
+                eq += str(newd)
+        return eq#, newa, newb, newc, newd   
+    '''
+    cosine regression
+    see notes under sine regressions
+    '''
+    @classmethod
+    def cosreg(self, xs, ys, outprecision=1):
+        import numpy
+        from math import pi
+        import cat
+        precision = 5
+        for i, x in enumerate(xs):
+            xs[i] = round(x, precision)
+        for i, y in enumerate(ys):
+            ys[i] = round(y, precision)
+        del x
+        del y
+        #get quadratic curve from hich to derive vertexes midline, and period (find width between intersections
+        A = numpy.matrix([[xs[0]**2, xs[0], 1],
+                          [xs[1]**2, xs[1], 1],
+                          [xs[2]**2, xs[2], 1]])
+        X = numpy.matrix([[ys[0]], [ys[1]], [ys[2]]])
+        B = A.I*X
+        a = B[0, 0]
+        b = B[1, 0]
+        c = B[2, 0]
+        #can evaluate this with different numbers by changing x
+        #positive c to reflect around midline instead of x-axis
+        f1 = '%s*x**2+%s*x+%s' % (a, b, c)
+        f2 = '%s*x**2+%s*x+%s' % (-a, -b, c)
+        #midlines
+        #solves for intesrection
+        #can do this because functions are fliped around midline. Remove c to flip around midline, intersection
+        #is midline
+        #QE
+        #does not account for phase shift
+        #might not need to
+        x1 = 0
+        x2 = (-2*b)/(2*a)
+        x=0
+        y1 = eval(f1), precision
+        x = x2
+        y2 = eval(f1), precision
+        #possibly find the equation mathich y1 and y2 to find a linier midline
+        assert round(y1, 3) == round(y2, 3), 'Midline is not flat. Non-flat midlines not yet supported. y1=%s. y2=%s' %(y1, y2)
+        #y=asin(b(x+c))+d
+        newd = y1
+        period = abs(x1-x2)*2
+        #period seems to be wildly imprecise, this is an attempt
+        #to ensure it is not 2pi
+        if round(period, 1) == round(2*pi, 1):
+            newb = 1
+        else:
+            newb = abs(x1-x2)*2.0 #real be = 2pi/this
+        #find vertexes
+        h = (-b)/(2*a)
+        x = h
+        k = eval(f1)
+        newa = abs(k-newd)
+        #phase shift
+        newc = -h
+        #formats equation
+        coeffs = [newa, newb, newc, newd]
+        for i, co in enumerate(coeffs):
+            coeffs[i] = round(co, outprecision)
+        newa, newb, newc, newd = coeffs
+        eq = ''
+        if newa != 1:
+            eq += str(newa) 
+        eq += 'cos('
+        roundb = round(2*pi/newb, 1)
+        print roundb
+        if newb != 1 and newb != round(2*pi, precision) and not cat.oldmath.closeint((2*pi)/newb, .1) and not cat.oldmath.isfrac(roundb):
+            eq += '2pi/'+str(newb)+'('
+        elif cat.oldmath.closeint((2*pi)/newb, .1) or cat.oldmath.isfrac(roundb):
+            eq += str(round((2*pi)/newb, outprecision))+'('
+##        elif newb == 1:
+##            eq += '2pi('
+        z = numpy.sign(newc)
+        newc = round(newc, precision)%(period/2) #takes remainder becase a c larger than the period would be pointless
+        newc *= z
+        if newc != 0:
+            if newc > 0:
+                eq += 'x + '+str(newc)
+            else:
+                eq += 'x '+str(newc)
+        else:
+            eq += 'x'
+        if newb != 1 and newb != round(2*pi, precision):
+            eq += ')'
+        eq += ')'
+        if newd != 0:
+            if newd > 0:
+                eq += '+'+str(newd)
+            else:
+                eq += str(newd)
+        return eq#, newa, newb, newc, newd
+                    
 '''
 class for taking irrational numbers out of equations
 Only can do division for now
@@ -326,7 +517,7 @@ class irrat(object):
         pic = u'\u03c0'
         if not n%pi:
             n2 = n/pi
-            if not cat.oldmath.isint(n2)
+            if not cat.oldmath.isint(n2):
                 n2 = fraction.tostring(fraction.tofrac(n2))
         #would need to determine if an even root can be taken here,
         #then take it if nessesary

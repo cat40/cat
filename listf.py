@@ -1,21 +1,19 @@
 # Returns a tuple of entry number, greatest value
 def greatest(List):
-    Entries = 0
     High = List[0]
-    for values in List:
-        if List[Entries] >= High:
-            High = List[Entries]
-            HighNum = Entries
+    for i, v in enumerate(List):
+        if v >= High:
+            High = v
+            HighNum = i
     return HighNum, High
 
 #Returns a tuple of entry number, lowest value
 def least(List):
-    Entries = 0
     Low = List[0]
-    for values in List:
-        if List[Entries] <= High:
-            Low = List[Entries]
-            LowNum = Entries
+    for i, v in enumerate(List):
+        if v <= Low:
+            Low = v
+            LowNum = i
     return LowNum, Low
 
 #Returns a list of equavilent values in a two lists

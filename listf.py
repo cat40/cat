@@ -95,7 +95,7 @@ like flatten, but a generator
 def genflatten(l):
     import collections
     for thing in l:
-        if isinstance(thing, collections.Iterable) and not isinstance(l, (str, bytes)):
+        if isinstance(thing, collections.Iterable) and not isinstance(thing, (str, bytes)):
             for item in genflatten(thing):
                 yield item
         else:

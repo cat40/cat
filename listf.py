@@ -100,3 +100,24 @@ def genflatten(l):
                 yield item
         else:
             yield thing
+
+'''
+takes a list of strings and merges the strings between two charecters
+'''
+def mergestring(l, entry):
+    newl = []
+    startmerge = False
+    for char in l:
+        if char == entry:
+            if startmerge:
+                startmerge = False
+                newl.append(''.join([entry]+newl2+[entry]))
+            else:
+                startmerge = True
+                newl2 = []
+        else:
+            if startmerge:
+                newl2.append(char)
+            else:
+                newl.append(char)
+    return newl

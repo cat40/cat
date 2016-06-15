@@ -104,20 +104,20 @@ def genflatten(l):
 '''
 takes a list of strings and merges the strings between two charecters
 '''
-def mergestring(l, entry):
+def mergestring(l, start, end=None):
+    if end is None:
+        end = start
     newl = []
     startmerge = False
     for char in l:
-        if char == entry:
-            if startmerge:
-                startmerge = False
-                newl.append(''.join([entry]+newl2+[entry]))
-            else:
-                startmerge = True
-                newl2 = []
-        else:
-            if startmerge:
-                newl2.append(char)
-            else:
-                newl.append(char)
+        if char == end:
+            newl.append(''.join([start]+newl2+[end]))
+            startmerge = False
+        elif char == start:
+            newl2 = []
+            startmerge = True
+        if startmerge and char != start:
+            newl2.append(char)
+        elif char != end and char != start:
+            newl.append(char)
     return newl

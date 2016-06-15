@@ -64,8 +64,39 @@ def pick(l):
     import random
     return l[random.randint(0, len(l)-1)]
 
+'''
+searches a list for a value
+Returns the index number
+'''
 def find(val, l):
-    for thing in l:
+    for i, thing in enumerate(l):
         if val in thing:
-            return thing
+            return i
     raise IndexError('No matching values')
+
+'''
+flattens a list of lists
+List can be irregular ([a, b, c], [e, f, g, h, i], j, k, l])
+'''
+def flatten(l):
+    import collections
+    newl = []
+    for thing in l:
+        if isinstance(thing, collections.Iterable) and not isinstance(l, (str, bytes)):
+            for item in genflatten(thing):
+                newl.append(item)
+        else:
+            newl.append(thing)
+    return newl
+
+'''
+like flatten, but a generator
+'''
+def genflatten(l):
+    import collections
+    for thing in l:
+        if isinstance(thing, collections.Iterable) and not isinstance(l, (str, bytes)):
+            for item in genflatten(thing):
+                yield item
+        else:
+            yield thing

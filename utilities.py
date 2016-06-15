@@ -62,6 +62,10 @@ def getvar(path): #returns a dictionary of variables. Call using getvar(path)['v
     del line
     return locals()
 
+'''
+deletes all variables before exiting
+Theoretically more secure than sys.exit()
+'''
 def delex():
     import sys
     this = sys.modules[__name__]
@@ -69,3 +73,4 @@ def delex():
         if n[0]!='_': delattr(this, n)
     del n
     sys.exit()
+    

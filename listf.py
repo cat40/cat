@@ -102,22 +102,45 @@ def genflatten(l):
             yield thing
 
 '''
-takes a list of strings and merges the strings between two charecters
+class for dealing with strings in lists
 '''
-def mergestring(l, start, end=None):
-    if end is None:
-        end = start
-    newl = []
-    startmerge = False
-    for char in l:
-        if char == end:
-            newl.append(''.join([start]+newl2+[end]))
-            startmerge = False
-        elif char == start:
-            newl2 = []
-            startmerge = True
-        if startmerge and char != start:
-            newl2.append(char)
-        elif char != end and char != start:
-            newl.append(char)
-    return newl
+class string(object):
+    @classmethod
+    def __init__(self):
+        None
+        
+    '''
+    takes a list of strings and merges the strings between two charecters
+    '''
+    @classmethod
+    def merge(self, l, start, end=None):
+        if end is None:
+            end = start
+        newl = []
+        startmerge = False
+        for char in l:
+            if char == end:
+                newl.append(''.join([start]+newl2+[end]))
+                startmerge = False
+            elif char == start:
+                newl2 = []
+                startmerge = True
+            if startmerge and char != start:
+                newl2.append(char)
+            elif char != end and char != start:
+                newl.append(char)
+        return newl
+
+    '''
+    splits a string into lists
+    like string.split(), but will add the split charecter into the list
+    Note: use str.partition() for single splits
+    '''
+    @classmethod
+    def split(self, s, char):
+        l = s.split(char)
+        for i, thing in enumerate(l):
+            l[i] = [thing, char]
+        flatten(l)
+        del l[len(l)-1]
+        return l

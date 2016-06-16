@@ -535,9 +535,91 @@ class irrat(object):
             if not cat.oldmath.isint(n2):
                 n2 = fraction.tostring(fraction.tofrac(n2))
         return 'e*'+n2
-        
-        
-    
+
+#might make class eqformat for eqsplit and eqformat(rename)        
+'''
+Splits an equation into a list of numbers/variables and operators
+Returns a list
+'''
+def eqsplit(eq, ops=['-', '*', '/', '%', '**', '(', ')', '=', '^'], init='+'):
+    import fnmatch
+    import cat
+    from cat import listf
+    #first operator is a special case. '+' is used
+    e = eq.split(init)
+    for i, c in enumerate(e):
+        e[i] = [c, init]
+    e = listf.flatten(e)
+    del e[len(e)-1]
+
+    for op in ops:
+        for i, l in enumerate(e):
+            if op in l:
+                l = l.split(op)
+                for i2, c in enumerate(l):
+                    l[i2] = [c, op]
+                l = listf.flatten(l)
+                del l[len(l)-1]
+            e[i] = l
+        e = listf.flatten(e)
+    return e
+
+'''
+takes an equation in Python syntax and
+puts it in standard syntax
+On hold until re can be made to work
+'''
+##def eqformat(eq):
+##    import listf
+##    import fnmatch
+##    e = eqsplit(eq)
+##    for i, char in enumerate(e):
+##        if char == '+' or char == '-':
+##            e[i] = ' %s ' % char
+##        if char == '**':
+##            e[i] = '^'
+##        if char == '*' and e[i+1] == '(':
+##            e[i] = ''
+##        #add any additional charecters here
+##    e = ''.join(e)
+##    #re.search has 'error: nothing to repeat if used
+##    #Apparently a Python problem
+##    e = listf.string.split(e, '^')
+##    ops = ['+', '-', '*', '/']
+##    for op in ops:
+##        if op != '/':
+##            for i, char in enumerate(e):
+##                e[i] = char.split(op)
+##        else:
+##            #need to use re.something for this because wildcards are nessesary
+##        e = listf.flatten(e)
+##    e2 = []
+##    skip = False
+##    for i, char in enumerate(e):
+##        if not skip:
+##            if char == '^':
+##                #skip the next iteration
+##                skip = True
+##                #combine things around the carrot charecters
+##                del e2[len(c2)-1]
+##                e2.append(e[i-1]+'^'+e[i+1])
+##            else:
+##                e2.append(char)
+##        else:
+##            skip = False
+##    parenthesis = fnmatch.filter(e, '*^(*/*)')
+##    for i, char in enumerate(e):
+##        if char in parenthesis:
+##            
+##            
+##'''
+##takes an equation in Python sytax and puts it in
+##Effofex syntax
+##'''
+##def effofex(eq):
+
+#makes reverse functions to take standard syntax and put in python syntax
+
 #this stays at the bottom    
 def newmath():
     print '''You can't take three from two,

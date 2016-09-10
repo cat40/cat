@@ -74,3 +74,6 @@ def delex():
     del n
     sys.exit()
     
+def walk(path):
+    import os
+    return (os.path.join(root, filename) for root, _, filenames in os.walk(path) for filename in filenames)

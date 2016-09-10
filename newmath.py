@@ -2,6 +2,9 @@
 Module for advanced math functions
 Intended for use with user interface, rather than computer processing
 For computer processesing, use oldmath (in progress)
+to do:
+* make class for eqations to avoid splitting them up
+    -would have them as custom data types
 '''
 import cat
 #import warnings
@@ -17,6 +20,10 @@ def changebase(num, base=2):
     num2 = num
     times = 0
     a = 0
+##    symbols = {10:'a',
+##               11:'b',
+##               12:'c',
+    #chr(num+87)          
     #gets highest power of the base (highest place) the number will reach
     while True:
         num2 -= base**a
@@ -38,7 +45,11 @@ def changebase(num, base=2):
         num2 -= den*char
     numstr = ''
     for char in numlist:
-        numstr += char 
+        print char
+        if int(char) >= 10:
+            numstr += chr(int(char)+87)
+        else:
+            numstr += char 
     return numstr
 
 '''
@@ -536,89 +547,186 @@ class irrat(object):
                 n2 = fraction.tostring(fraction.tofrac(n2))
         return 'e*'+n2
 
-#might make class eqformat for eqsplit and eqformat(rename)        
 '''
-Splits an equation into a list of numbers/variables and operators
-Returns a list
+class for equations
+Makes equation objects
 '''
-def eqsplit(eq, ops=['-', '*', '/', '%', '**', '(', ')', '=', '^'], init='+'):
-    import fnmatch
-    import cat
-    from cat import listf
-    #first operator is a special case. '+' is used
-    e = eq.split(init)
-    for i, c in enumerate(e):
-        e[i] = [c, init]
-    e = listf.flatten(e)
-    del e[len(e)-1]
+class equation(object):
+    @classmethod
+    def __init__(self, eq, ops=None):
+        if not ops:
+            self.declaredops = []
+            ops = ['+', '-', '/', '%', '*', '(', ')', '=', '**']
+        else:
+            self.declaredops = ops
+        self.string = eq
+        self.ops = equation.getops(ops)
+        self.nonops = equation.getnonops(ops)
 
-    for op in ops:
-        for i, l in enumerate(e):
-            if op in l:
-                l = l.split(op)
-                for i2, c in enumerate(l):
-                    l[i2] = [c, op]
-                l = listf.flatten(l)
-                del l[len(l)-1]
-            e[i] = l
+    '''
+    returns a list of the operators in the equation, in order
+    '''
+    @classmethod
+    def getops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        oplist = []
+        for char in self.split(ops):
+            if char in ops:
+                oplist.append(char)
+        return oplist
+
+    '''
+    like getops, but a generator
+    '''
+    @classmethod
+    def getopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        for char in self.split(ops):
+            if char in ops:
+                yield char
+
+    '''
+    gets everything but the operators, in order
+    '''
+    @classmethod
+    def getnonops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        oplist = []
+        for char in self.split(ops):
+            if char not in ops:
+                oplist.append(char)
+        return oplist
+
+    '''
+    like getops, but a generator
+    '''
+    @classmethod
+    def getnonopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        for char in self.split(ops):
+            if char not in ops:
+                yield char
+                
+    '''
+    Splits an equation into a list of numbers/variables and operators
+    Returns a list
+    Note: place multi-charecter operators first in the list
+    '''
+    @classmethod
+    def split(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
+        import fnmatch
+        import cat
+        from cat import listf
+        init = ops[0]
+        ops = ops[1:]
+        #first operator is a special case. '+' is used
+        e = self.string.replace('**', '^').split(init)
+        for i, c in enumerate(e):
+            e[i] = [c, init]
         e = listf.flatten(e)
-    return e
+        del e[len(e)-1]
+        for op in ops:
+            for i, l in enumerate(e):
+                if op in l:
+                    l = l.split(op)
+                    for i2, c in enumerate(l):
+                        l[i2] = [c, op]
+                    l = listf.flatten(l)
+                    del l[len(l)-1]
+                e[i] = l
+            e = listf.flatten(e)
+        #removes blank strings that seem to appear
+        e2 = []
+        skip = False
+        for char in e:
+            if char:
+                e2.append(char)
+        #replaces ^ with ** (** was replaced with ^ to prevent splitting into 2 *s)
+        for i, char in enumerate(e2):
+            if char == '^':
+                e2[i] = '**'
+        return e2
 
-'''
-takes an equation in Python syntax and
-puts it in standard syntax
-On hold until re can be made to work
-'''
-##def eqformat(eq):
-##    import listf
-##    import fnmatch
-##    e = eqsplit(eq)
-##    for i, char in enumerate(e):
-##        if char == '+' or char == '-':
-##            e[i] = ' %s ' % char
-##        if char == '**':
-##            e[i] = '^'
-##        if char == '*' and e[i+1] == '(':
-##            e[i] = ''
-##        #add any additional charecters here
-##    e = ''.join(e)
-##    #re.search has 'error: nothing to repeat if used
-##    #Apparently a Python problem
-##    e = listf.string.split(e, '^')
-##    ops = ['+', '-', '*', '/']
-##    for op in ops:
-##        if op != '/':
-##            for i, char in enumerate(e):
-##                e[i] = char.split(op)
-##        else:
-##            #need to use re.something for this because wildcards are nessesary
-##        e = listf.flatten(e)
-##    e2 = []
-##    skip = False
-##    for i, char in enumerate(e):
-##        if not skip:
-##            if char == '^':
-##                #skip the next iteration
-##                skip = True
-##                #combine things around the carrot charecters
-##                del e2[len(c2)-1]
-##                e2.append(e[i-1]+'^'+e[i+1])
-##            else:
-##                e2.append(char)
-##        else:
-##            skip = False
-##    parenthesis = fnmatch.filter(e, '*^(*/*)')
-##    for i, char in enumerate(e):
-##        if char in parenthesis:
-##            
-##            
-##'''
-##takes an equation in Python sytax and puts it in
-##Effofex syntax
-##'''
-##def effofex(eq):
-
-#makes reverse functions to take standard syntax and put in python syntax
+    '''
+    takes an equation in Python syntax and
+    puts it in standard syntax
+    Not yet finished
+    Currently requires that all exponents have thier bases parenthetsized - (5)**4
+    Call as equationobject.format()
+    '''
+    @classmethod
+    def format(self):
+        import re
+        import listf
+        import fnmatch
+        e = self
+        e = e.split()
+        for i, char in enumerate(e):
+            if char == '+' or char == '-':
+                try: a = int(e[i-1]) == 0
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i-1] = ''
+                e[i] = ' %s ' % char
+            elif char == '**':
+                e[i] = '^'
+            elif char == '*':
+                try: a = int(e[i-1]) == 1
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i-1] = ''
+            #add any additional charecters here
+            #put parenthesise logic below root logic
+            else:
+                try: a = int(char) == 0 and '+' in e[i+1]#e[i+1] == '+' or e[i+1] == ' + '
+                except (IndexError, ValueError):
+                    pass
+                else:
+                    if a:
+                        e[i] = ''
+                        e[i+1] = ''
+                    else:
+                        try: a = int(char) == 1 and e[i+1] == '*'#'*' in e[i+1] and '**' not in e[i+1]
+                        except (IndexError, ValueError):
+                            pass
+                        else:
+                            if a:
+                                e[i] = ''
+                                e[i+1] = ''
+        e = ''.join(e)
+        #Root logic:
+        #parenthesis framing pattern to include removed charecters
+        e = re.split(r'(\([^\)]+\)\^\([^/]+/[^\)]+\))', e)
+        e = listf.rstrip('', e)
+        for i, val in enumerate(e):
+            #would be better if there were an re.equals()
+            if re.search(r'(\([^\)]+\)\^\([^/]+/[^\)]+\))', val):
+                #val = listf.string.split(val, '^')
+                val = val.split('^')
+                base = val[0][1:len(val[0])-1] #strips leading and ending parenthesis
+                exp, root = val[1].split('/')
+                root = root[:len(root)-1] #strips last parenthese
+                exp = exp[1:]#strips leading parenthese
+                if float(root) == 2:
+                    if float(exp) == 1:
+                        e[i] = 'root(%s)' % base
+                    else:
+                        e[i] = 'root(%s^(%s))' % (base, exp)
+                
+                elif float(exp) == 1:
+                    e[i] = '%sroot(%s)' % (root, base)
+                else:
+                    e[i] = '%sroot(%s^(%s))' % (root, base, exp)
+        #parenthese logic
+        e = ''.join(e)
+        e = equation(e).split()
+        for i, char in enumerate(e):
+            if char == '*' and e[i+1] == '(': 
+                e[i] = ''
+        return ''.join(e)                     
+#make reverse functions to take standard syntax and put in python syntax
 
 #this stays at the bottom    
 def newmath():

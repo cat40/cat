@@ -1,4 +1,5 @@
-# Returns a tuple of entry number, greatest value
+from copy import copy
+#Returns a tuple of entry number, greatest value
 def greatest(List):
     High = List[0]
     for i, v in enumerate(List):
@@ -40,7 +41,6 @@ def checkduplicate(List):
 
 #Checks for duplicates in a list and returns a list with no duplicates
 def delduplicate(list1):
-    from copy import copy
     a = 0
     list3 = []
     for value in List:
@@ -69,14 +69,16 @@ searches a list for a value
 Returns the index number
 '''
 def find(val, l):
+    found = []
     for i, thing in enumerate(l):
-        if val in thing:
-            return i
-    raise IndexError('No matching values')
+        if val == thing:
+            found.append(i)
+    return found
+
 
 '''
 flattens a list of lists
-List can be irregular ([a, b, c], [e, f, g, h, i], j, k, l])
+List can be irregular ([[a, b, c], [e, f, g, h, i], j, k, l])
 '''
 def flatten(l):
     import collections
@@ -101,6 +103,37 @@ def genflatten(l):
         else:
             yield thing
 
+'''
+strips an entry from a list
+'''
+def strip(v, l):
+    newl = []
+    for i in l:
+        if i != v:
+            newl.append(i)
+    return newl
+
+'''
+strips an entry from right
+'''
+def rstrip(v, l):
+    strip = False
+    for i, value in enumerate(reversed(l)):
+        if value != v:
+            break
+    i = len(l) - i
+    return l[:i]
+'''
+strips an entry from left
+'''
+def lstrip(v, l):
+    strip = False
+    for i, value in enumerate(l):
+        if value != v:
+            break
+    i = len(l) - i
+    return l[:i]
+        
 '''
 class for dealing with strings in lists
 '''
@@ -144,3 +177,18 @@ class string(object):
         flatten(l)
         del l[len(l)-1]
         return l
+
+    '''
+    splits a string into lists with re
+    '''
+    @classmethod
+    def resplit(self, s, char, supresserror=True):
+        import re
+        try: finds = re.search(s, char)
+        except AttributeError:
+            if supresserror:
+                return s
+            else:
+                raise
+        l = re.split(char, s)
+        

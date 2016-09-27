@@ -77,3 +77,24 @@ def delex():
 def walk(path):
     import os
     return (os.path.join(root, filename) for root, _, filenames in os.walk(path) for filename in filenames)
+
+def bitsfromfile(f):
+    byte = (ord(b) for b in f.read())
+    for b in byte:
+        for i in range(8):
+            #print b, i, b >> i, (b>>i)&1
+            yield (b >> i) & 1
+            
+def bits(f):
+    byte = (ord(b) for b in f)
+    for b in byte:
+        for i in range(8):
+            #print b, i, b >> i, (b>>i)&1
+            yield (b >> i) & 1
+
+'''
+assertion with customizable error type
+'''
+def assertf(phrase, error=AssertionError):
+    if not phrase:
+        raise error

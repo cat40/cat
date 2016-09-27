@@ -5,6 +5,8 @@ For computer processesing, use oldmath (in progress)
 to do:
 * make class for eqations to avoid splitting them up
     -would have them as custom data types
+* add filtering of pi out of radian measures. Also common square roots
+    -(generic remove_irrat(num, num_symbol)
 '''
 import cat
 #import warnings
@@ -204,7 +206,7 @@ class fraction(object):
     returns tuple (numerator, denominator)
     '''
     @classmethod
-    def tofrac(self, num):
+    def tofrac_old(self, num):
         cat.ctype(num, float, 'tofrac()')
         num2 = num
         count = 0
@@ -215,6 +217,14 @@ class fraction(object):
         d = 10**count
         print n, d
         return fraction.simplify((int(n), int(d)))
+
+    '''
+    same as tofrac_old, using native implementaion
+    '''
+    @classmethod
+    def tofrac(cls, num):
+        n, d = num.as_integer_ratio()
+        return cls(n, d)
 
     '''
     Adds two fractions
@@ -230,7 +240,6 @@ class fraction(object):
             nd = d1*d2
             n1 *= d2
             n2 *= d1
-            
 
     '''
     gets a tuple of numerator, denominator from a fraciton object

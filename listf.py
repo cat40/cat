@@ -135,6 +135,17 @@ class listf(list):
                 break
         i = len(l) - i
         return l[:i]
+
+    #searches a list for each value in another list, yeilding a list of indexes of the searched list for each item
+    #yeilds empty list for no finds
+    def compare(self, patlist):
+        for item in pathlist:
+            items = []
+            #might needto add list attrribute to self
+            for i, thing in enumerate(self):
+                if thing == item:
+                    items.append(i)
+            yield items
             
     '''
     class for dealing with strings in lists

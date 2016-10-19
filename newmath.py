@@ -12,91 +12,6 @@ import cat
 #import warnings
 
 '''
-Takes a number and the base to change it to and changes base
-Returns a string
-Default base is 2 if none provided
-'''
-def changebase(num, base=2):
-    #if num is not evenly divisable by base
-    #uses repeated subtraction instead of division
-    num2 = num
-    times = 0
-    a = 0
-##    symbols = {10:'a',
-##               11:'b',
-##               12:'c',
-    #chr(num+87)          
-    #gets highest power of the base (highest place) the number will reach
-    while True:
-        num2 -= base**a
-        #print num2, base**a, a
-        if num2 >= 0:
-            num2 = num
-            a += 1
-        else:
-            num2 = num
-            #a -= 1
-            break
-    #gets the number
-    #need to determine the value of each place using division and remanders
-    numlist =  ['0']*a
-    for index, dgt in enumerate(numlist):
-        den = (base**(len(numlist)-1-index))
-        char = int(float(num2)/den)
-        numlist[index] = str(char)
-        num2 -= den*char
-    numstr = ''
-    for char in numlist:
-        print char
-        if int(char) >= 10:
-            numstr += chr(int(char)+87)
-        else:
-            numstr += char 
-    return numstr
-
-'''
-retunrs the string of a number in base ten, transformed out of a given base
-'''
-def frombase(num, base=2):
-    return str(int(num, base))
-
-'''
-Takes the root of a number
-If the number is not a perfect square, returns simplifed radical
-Using pad will pad the string returned with spaces on each side for flow.
-'''
-def root(num, base=2, pad=False):
-    import cat
-    cat.ctype(num, int, 'root()')
-    num = float(num)
-    exp = 1./base
-    if int(num**exp) == num**exp:
-        return str(num**exp)
-    else:
-        #gets perfect base powers possible, within range needed. Will then divide those out, checking remainder.
-        #gets perfect powers in number
-        perfs = []
-        for i in range(1, int(num)+1):
-            if not num % i**base:
-                perfs.append(i)
-        #divides out perfect sqaures, starting with largest
-        perfs = sorted(perfs, reverse=True)
-        num2 = num
-        for i in perfs:
-            if not num2 % (i**base):
-                num2 = num2/(i**base)
-        #gets the factor
-        fact = (num/num2)**exp #remove +1 and add exception to make 0=1?
-        #builds the return
-        fact = '' if fact ==1 else str(int(fact))+'*'
-        roottype = '' if base == 2 else str(int(base))
-        expression = '%s%sroot(%s)' % (fact, roottype, int(num2))
-        if pad:
-            return ' '+expression+' '
-        else:
-            return expression
-
-'''
 class for factoring things
 might move this to oldmath
 '''
@@ -185,28 +100,22 @@ class fraction(object):
     '''
     simplifies a fraction given as a tuple
     '''
-    @classmethod
-    def simplify(self, num):
-      #  cat.ctype(num, cat.newmath.fraction, 'simplify()')
-   #     if len(num) > 2:
-   #         warnings.warn('Expected tuple of lenth 2. Tuple of lenth %s recived. This might still work' % len(num)) 
-##        for i in num:
-##            cat.ctype(i, int, 'simplify()')
+    def simplify(num):
+        print type(num)
         n = num.n
         d = num.d
-        print factor.factor(n, one=False, split=True)
+        #print factor.factor(n, one=False, split=True)
         for i in cat.listf.compare(factor.factor(n, one=False, split=True), factor.factor(d, one=False, split=True)):
             n /= i
             d /= i
-            print n, d
-        return n, d
+        return num(n, d)
     
     '''
     converts decimal to fraction
     returns tuple (numerator, denominator)
     '''
     @classmethod
-    def tofrac_old(self, num):
+    def tofrac_old(cls, num):
         cat.ctype(num, float, 'tofrac()')
         num2 = num
         count = 0
@@ -215,8 +124,8 @@ class fraction(object):
             count += 1
         n = num2
         d = 10**count
-        print n, d
-        return fraction.simplify((int(n), int(d)))
+        return type(cls(n, d))
+        #return cls(n, d).simplify()
 
     '''
     same as tofrac_old, using native implementaion
@@ -524,17 +433,21 @@ class for taking irrational numbers out of equations
 Only can do division for now
 Exponents coming later
 '''
-class irrat(object):
+class Irrational(object):
     @classmethod
-    def __init__(self):
-        import math
-        from math import pi, e
+    def __init__(self, num, symbol=None):
+        self.num = num
+        if symbol == None:
+            symbol = str(num)
+        self.symbol = symbol
         
     '''
     pi
     '''
-    def rempi(self, n, useunicode=True):
+    def rempi(self,useunicode=True):
+        from math import pi
         pic = u'\u03c0'
+        n = self.num
         if not n%pi:
             n2 = n/pi
             if not cat.oldmath.isint(n2):
@@ -556,12 +469,14 @@ class irrat(object):
                 n2 = fraction.tostring(fraction.tofrac(n2))
         return 'e*'+n2
 
+    def __str__
+
 '''
 class for equations
 Makes equation objects
 '''
 class equation(object):
-    @classmethod
+#    @classmethod
     def __init__(self, eq, ops=None):
         if not ops:
             self.declaredops = []
@@ -575,7 +490,7 @@ class equation(object):
     '''
     returns a list of the operators in the equation, in order
     '''
-    @classmethod
+#    @classmethod
     def getops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         oplist = []
         for char in self.split(ops):
@@ -586,7 +501,7 @@ class equation(object):
     '''
     like getops, but a generator
     '''
-    @classmethod
+#    @classmethod
     def getopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         for char in self.split(ops):
             if char in ops:
@@ -595,7 +510,7 @@ class equation(object):
     '''
     gets everything but the operators, in order
     '''
-    @classmethod
+#    @classmethod
     def getnonops(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         oplist = []
         for char in self.split(ops):
@@ -606,7 +521,7 @@ class equation(object):
     '''
     like getops, but a generator
     '''
-    @classmethod
+#S    @classmethod
     def getnonopsgen(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         for char in self.split(ops):
             if char not in ops:
@@ -617,7 +532,7 @@ class equation(object):
     Returns a list
     Note: place multi-charecter operators first in the list
     '''
-    @classmethod
+#    @classmethod
     def split(self, ops=['+', '-', '/', '%', '*', '(', ')', '=', '^']):
         import fnmatch
         import cat
@@ -659,7 +574,7 @@ class equation(object):
     Currently requires that all exponents have thier bases parenthetsized - (5)**4
     Call as equationobject.format()
     '''
-    @classmethod
+#    @classmethod
     def format(self):
         import re
         import listf
@@ -734,12 +649,33 @@ class equation(object):
         for i, char in enumerate(e):
             if char == '*' and e[i+1] == '(': 
                 e[i] = ''
-        return ''.join(e)                     
-#make reverse functions to take standard syntax and put in python syntax
+        return ''.join(e)
+
+    def pyformat(self):
+        e = self.string
+        e = e.replace('^', '**')
+        #parenthesis filtering
+        #Parenthesis encolse pattern to add patterns found to the list of splits
+        esplit = re.split('([1-9]+\([^\)]+\))', '5(237+93)*1939+7(73)')
+        
+    def evaluate(self):
+        return eval(pyformat(self))
+    #make reverse functions to take standard syntax and put in python syntax
 
 #this stays at the bottom    
 def newmath():
-    print '''You can't take three from two,
+    from time import sleep as s
+    print 'New Math!',
+    s(.5)
+    print ' New-',
+    s(.15)
+    print 'hoo-',
+    s(.15)
+    print 'hoo',
+    s(.15)
+    print 'math'
+    #print
+    '''You can't take three from two,
 Two is less than three,
 So you look at the four in the tens place.
 Now that's really four tens

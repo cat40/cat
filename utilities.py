@@ -98,3 +98,18 @@ assertion with customizable error type
 def assertf(phrase, error=AssertionError):
     if not phrase:
         raise error
+
+'''
+Tests different methods for speed
+available arguments:
+'''
+def speedtest(*args, **kwargs):
+    import time
+    repetitions = kwargs.pop('repetitions', 100000)
+    trials = kwargs.pop('trials', 1)
+    for f, f_args in args:
+        starttime = time.clock()
+        for _ in xrange(trials):
+            for _ in xrange(repetitions):
+                f(*f_args)
+        yield time.clock() - starttime

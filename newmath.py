@@ -11,6 +11,9 @@ to do:
 import cat
 #import warnings
 
+pisym = u'\u03C0'
+sqrtsym = u'\u221A'
+
 '''
 class for factoring things
 might move this to oldmath

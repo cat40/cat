@@ -4,6 +4,9 @@ module for math computations
 import math
 from math import sin, cos, atan
 
+sqrt2 = 2**0.5
+
+
 '''
 Infinity. Includes the concept of multiple infinities
 This will not say that oo + x > oo. Will be considered equal. Only considers multipliers and exponents
@@ -80,7 +83,7 @@ Add floor/ceiling methods
 ROUNDING, and probably some operators, will not work on bases > 10
 '''
 class Base(object):        
-    def __init__(self, num, base=2, seperator='\\', isfloat=False):
+    def __init__(self, num, base=2, seperator='\\', isfloat=False, basesymbol=None):
         #this must be a string type!
         self.num = str(num)
         self.base = base
@@ -88,9 +91,11 @@ class Base(object):
         self.isfloat = isfloat
         self.whole = num.split('.')[0]
         self.float = num.split('.')[1] if isfloat else ''
+        if basesymbol is None:
+            basesymbol = str(base)
+        self.basesymbol = basesymbol
+
     @classmethod
-    #probably doesn't work:
-    #Also won't do places < 1 or bases > 10
     def tobase(cls, num, base, precision=None):              
         if base == 10:
             #this might confuse the user
@@ -100,7 +105,7 @@ class Base(object):
             neg = '-'
         else:
             neg = ''
-        if isinstance(base, int):
+        if isinstance(base, int) and isinstance(num, int):
             string = ''
             while num > 0:
                 rem = num % base
@@ -121,7 +126,7 @@ class Base(object):
             power = 0
             string += '.'
             #subtraction of irrational numbers gets x.xxxxxxx*10**-100something
-            while len(string.split('.')) <= precision:
+            while len(string.split('.')[1]) <= precision:
                 power -= 1
                 count = 0
                 while num >= base**power:
@@ -137,12 +142,12 @@ class Base(object):
             power = 0
             value = 0
             for digit in self.num.split('.')[0][::-1]:
-                value += self.numbers[digit] * base**power
+                value += self.numbers[digit] * self.base**power
                 power += 1
             #part < 1
             power = -1
             for digit in self.num.split('.')[1]:
-                value += int(digit) * base**power
+                value += int(digit) * self.base**power
                 power -= 1
             return value            
 
@@ -175,7 +180,7 @@ class Base(object):
     #not sure if seperator can be changed this way
     #might need a seperate attribute, maybe also a set_seperator function
     def __str__(self):
-        return self.num + self.seperator + str(self.base)
+        return self.num + self.seperator + self.basesymbol
 
     #@staticmethod
     @classmethod
